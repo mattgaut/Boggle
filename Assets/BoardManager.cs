@@ -100,7 +100,7 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
         }
         foreach (Block b in board) {
             int value = Random.Range(0, sum - 1);
-            while (value > 0) {
+            while (value >= 0) {
                 for (int i = 0; i < alphabet_frequency_copy.Count; i++) {
                     value -= alphabet_frequency_copy[i];
                     if (value <= 0) {
