@@ -13,7 +13,7 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
 
     [SerializeField] LineDisplayController line_display;
 
-    [SerializeField] Text word_display;
+    [SerializeField] WordDisplayController word_display;
 
     [SerializeField] int seed;
 
@@ -23,6 +23,7 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
     List<int> alphabet_frequency;
 
     List<string> words_in_play;
+    HashSet<string> used_words;
 
     string current_word;
     int last_block;
@@ -63,6 +64,8 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
     private void Awake() {
         alphabet = new List<string>()        { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Qu", "R", "S", "T", "U", "V", "X", "Y", "Z" };
         alphabet_frequency = new List<int>() {  10,  4,   4,   8,   12,  4,   6,   4,   10,  2,   2,   8,   4,   12,  8,   4,   1,    12,  8,   12,  6,   4,   2,   4,   2 };
+
+        used_words = new HashSet<string>();
 
         for (int i = 0; i < board.Length; i++) {
             board[i].Init(this, i);
@@ -109,13 +112,14 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
         }
         SetAvailableWords();
         word_bank.Clear();
+        used_words.Clear();
         word_bank.SetWordsLeft(words_in_play.Count);
     }
 
     public void StartWordSearch(int block_id) {
         current_word = board[block_id].value.ToUpper();
         last_block = block_id;
-        word_display.text = current_word;
+        word_display.SetText(current_word);
         is_searching = true;
 
         used_blocks = new HashSet<int>();
@@ -129,7 +133,14 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
             current_word += board[block_id].value.ToUpper();
             used_blocks.Add(block_id);
             last_block = block_id;
-            word_display.text = current_word;
+
+            WordDisplayController.State state = WordDisplayController.State.correct;
+            if (!words_in_play.Contains(current_word)) {
+                state = WordDisplayController.State.incorrect;
+            } else if (used_words.Contains(current_word)) {
+                state = WordDisplayController.State.used;
+            }
+            word_display.SetText(current_word, state);
 
             line_display.AddPosition(board[block_id].transform.position);
         }
@@ -137,12 +148,14 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
 
     public void EndWordSearch() {
         is_searching = false;
-        word_display.text = "";
+
+        word_display.Clear();
 
         line_display.Clear();
 
-        if (words_in_play.Contains(current_word)) {
+        if (words_in_play.Contains(current_word) && !used_words.Contains(current_word)) {
             word_bank.AddWord(current_word);
+            used_words.Add(current_word);
         }
     }
 

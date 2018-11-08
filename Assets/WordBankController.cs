@@ -12,13 +12,11 @@ public class WordBankController : MonoBehaviour {
     [SerializeField] Text word_prefab;
 
     List<Text> words_in_bank;
-    HashSet<string> used_words;
 
     int words_left_count;
 
     void Awake() {
         words_in_bank = new List<Text>();
-        used_words = new HashSet<string>();
     }
 
 	public void SetWordsLeft(int count) {
@@ -27,8 +25,6 @@ public class WordBankController : MonoBehaviour {
     }
 
     public void AddWord(string word) {
-        if (used_words.Contains(word)) return;
-
         Text new_word = Instantiate(word_prefab);
         new_word.text = word;
         int position = words_in_bank.BinarySearch(new_word, new TextComparer());
@@ -36,7 +32,6 @@ public class WordBankController : MonoBehaviour {
             position = -(position + 1);
         }
         words_in_bank.Insert(position, new_word);
-        used_words.Add(word);
 
         new_word.transform.SetParent(parent_transform);
         new_word.transform.SetSiblingIndex(position);
@@ -50,7 +45,6 @@ public class WordBankController : MonoBehaviour {
             Destroy(t.gameObject);
         }
         words_in_bank.Clear();
-        used_words.Clear();
         words_left.text = "";
     }
 
