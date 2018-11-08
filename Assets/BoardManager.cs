@@ -15,6 +15,8 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
 
     [SerializeField] WordDisplayController word_display;
 
+    [SerializeField] ScoreManager score_manager;
+
     [SerializeField] int seed;
 
     [SerializeField] bool use_random;
@@ -113,6 +115,7 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
         SetAvailableWords();
         word_bank.Clear();
         used_words.Clear();
+        score_manager.Clear();
         word_bank.SetWordsLeft(words_in_play.Count);
     }
 
@@ -156,6 +159,7 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
         if (words_in_play.Contains(current_word) && !used_words.Contains(current_word)) {
             word_bank.AddWord(current_word);
             used_words.Add(current_word);
+            score_manager.AddPointsForWord(current_word);
         }
     }
 
