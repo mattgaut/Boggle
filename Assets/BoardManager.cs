@@ -17,6 +17,8 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
 
     [SerializeField] ScoreManager score_manager;
 
+    [SerializeField] AudioSource play_click_sound;
+
     [SerializeField] int seed;
 
     [SerializeField] bool use_random;
@@ -129,6 +131,9 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
         used_blocks.Add(block_id);
 
         line_display.AddPosition(board[block_id].transform.position);
+
+        play_click_sound.Stop();
+        play_click_sound.Play();
     }
 
     public void AddToWordSearch(int block_id) {
@@ -146,6 +151,9 @@ public class BoardManager : MonoBehaviour, IGameDictionary {
             word_display.SetText(current_word, state);
 
             line_display.AddPosition(board[block_id].transform.position);
+
+            play_click_sound.Stop();
+            play_click_sound.Play();
         }
     }
 
