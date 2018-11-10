@@ -5,11 +5,11 @@ using UnityEngine.UI;
 
 public class WordFinder : MonoBehaviour {
 
-    [SerializeField] BoardManager dictionary;
+    [SerializeField] GameManager gm;
     [SerializeField] Text to_display;
 
 	public void FindWord(string search) {
-        List<string> words = dictionary.Search(search);
+        List<string> words = gm.current_game_dictionary.Search(search);
 
         string all_words = "";
 

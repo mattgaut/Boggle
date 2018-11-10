@@ -9,20 +9,18 @@ public class WordDisplayController : MonoBehaviour {
 
     [SerializeField] Color correct_color, used_color, base_color;
 
-    public enum State { correct, incorrect, used }
-
     public string word { get; private set; }
 
     public void SetText(string text) {
         SetText(text, base_color);
     }
 
-    public void SetText(string text, State state) {
-        if (state == State.correct) {
+    public void SetText(string text, WordState state) {
+        if (state == WordState.correct) {
             SetText(text, correct_color);
-        } else if (state == State.incorrect) {
+        } else if (state == WordState.incorrect) {
             SetText(text, base_color);
-        } else if (state == State.used) {
+        } else if (state == WordState.used) {
             SetText(text, used_color);
         }
     }
