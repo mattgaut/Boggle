@@ -5,11 +5,13 @@ using UnityEngine.UI;
 
 public enum WordState { correct, incorrect, used }
 
-public enum GameMode { timed, zen, find_words}
+public enum GameMode { standard, zen, word_rush}
 
 public class GameManager : MonoBehaviour {
 
     public GameSubDictionary current_game_dictionary { get; private set; }
+
+    public bool game_running { get; private set; }
 
     [SerializeField] BoardManager board_manager;
 
@@ -18,6 +20,8 @@ public class GameManager : MonoBehaviour {
     [SerializeField] ScoreManager score_manager;
 
     [SerializeField] SoundEffectManager sfx;
+
+    [SerializeField] EndGameUIManager end_game_ui;
 
     HashSet<string> used_words;
 
@@ -52,22 +56,23 @@ public class GameManager : MonoBehaviour {
             ShuffleBoard();
         }
 
+        if (game_running) {
+            if (mode == GameMode.word_rush) {
+                DisplayTime(timer);
+                timer += Time.deltaTime;
 
-        if (mode == GameMode.find_words) {
-            DisplayTime(timer);
-            timer += Time.deltaTime;
+                if (score_manager.reached_target) {
+                    EndGame();
+                }
+            } else if (mode == GameMode.standard) {
+                DisplayTime(timer);
 
-            if (score_manager.reached_target) {
-                EndGame();
+                if (timer < 0) {
+                    EndGame();
+                }
+
+                timer -= Time.deltaTime;
             }
-        } else if (mode == GameMode.timed) {
-            DisplayTime(timer);
-
-            if (timer < 0) {
-                EndGame();
-            }
-
-            timer -= Time.deltaTime;
         }
     }
 
@@ -79,12 +84,13 @@ public class GameManager : MonoBehaviour {
         used_words.Clear();
         if (mode == GameMode.zen) {
             word_bank.SetWordsLeft(current_game_dictionary.Count);
-        } else if (mode == GameMode.timed){
+        } else if (mode == GameMode.standard){
             timer = time_per_board;
-        } else if (mode == GameMode.find_words) {
+        } else if (mode == GameMode.word_rush) {
             timer = 0;
             score_manager.SetTargetScore(GetTotalPointsAvailable(), time_trial_percent_needed);
         }
+        game_running = true;
     }
 
     public WordState ProcessWordHover(string word) {
@@ -129,6 +135,35 @@ public class GameManager : MonoBehaviour {
     }
 
     void EndGame() {
-        ShuffleBoard();
+        GameInfo info = null;
+        if (mode == GameMode.word_rush) {
+            info = new GameInfo(mode, timer);
+        } else if (mode == GameMode.standard) {
+            info = new GameInfo(mode, score_manager.score);
+        }
+
+        end_game_ui.ShowEndGameUI(info);
+
+        game_running = false;
+    }
+}
+
+public class GameInfo {
+
+    public GameMode mode { get; private set; }
+
+    public float time_used { get; private set; }
+    public int score { get; private set; }
+
+    public GameInfo(GameMode mode, int score) {
+        this.mode = mode;
+        this.score = score;
+        time_used = 0f;
+    }
+
+    public GameInfo(GameMode mode, float time_used) {
+        this.mode = mode;
+        score = 0;
+        this.time_used = time_used;
     }
 }

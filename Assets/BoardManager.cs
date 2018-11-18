@@ -65,6 +65,11 @@ public class BoardManager : MonoBehaviour {
     }
 
     public void StartWordSearch(int block_id) {
+        if (!gm.game_running) {
+            if (is_searching) CancelWordSearch();
+            return;
+        }
+
         current_word = board[block_id].value.ToUpper();
         last_block = block_id;
         is_searching = true;
@@ -98,6 +103,13 @@ public class BoardManager : MonoBehaviour {
         is_searching = false;
 
         gm.ProcessWordSubmission(current_word);
+
+        line_display.Clear();
+        word_display.Clear();
+    }
+
+    void CancelWordSearch() {
+        is_searching = false;
 
         line_display.Clear();
         word_display.Clear();
