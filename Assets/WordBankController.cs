@@ -24,7 +24,7 @@ public class WordBankController : MonoBehaviour {
         words_left_count = count;
     }
 
-    public void AddWord(string word) {
+    public void AddWord(string word, bool using_words_left = false) {
         Text new_word = Instantiate(word_prefab);
         new_word.text = word;
         int position = words_in_bank.BinarySearch(new_word, new TextComparer());
@@ -35,9 +35,12 @@ public class WordBankController : MonoBehaviour {
 
         new_word.transform.SetParent(parent_transform);
         new_word.transform.SetSiblingIndex(position);
+        new_word.transform.localScale = parent_transform.localScale;
 
-        words_left_count--;
-        words_left.text = words_left_count + " Words Left";
+        if (using_words_left) {
+            words_left_count--;
+            words_left.text = words_left_count + " Words Left";
+        }
     }
 
     public void Clear() {

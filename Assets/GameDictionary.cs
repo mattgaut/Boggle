@@ -62,7 +62,7 @@ public class GameSubDictionary : IGameDictionary {
     }
 
     public GameSubDictionary(List<string> words) {
-        this.sub_dictionary = new List<string>(words);
+        sub_dictionary = new List<string>(words);
     }
 
     public List<string> Search(string search) {
