@@ -58,13 +58,13 @@ public class GameManager : MonoBehaviour {
             timer += Time.deltaTime;
 
             if (score_manager.reached_target) {
-                // End Game
+                EndGame();
             }
         } else if (mode == GameMode.timed) {
             DisplayTime(timer);
 
             if (timer < 0) {
-                // End Game
+                EndGame();
             }
 
             timer -= Time.deltaTime;
@@ -126,5 +126,9 @@ public class GameManager : MonoBehaviour {
             to_ret += score_manager.GetPointsForWord(word);
         }
         return to_ret;
+    }
+
+    void EndGame() {
+        ShuffleBoard();
     }
 }
