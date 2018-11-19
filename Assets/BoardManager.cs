@@ -15,8 +15,7 @@ public class BoardManager : MonoBehaviour {
 
     [SerializeField] GameManager gm;
 
-    List<string> alphabet;
-    List<int> alphabet_frequency;
+    [SerializeField] List<Die> dice;
 
     string current_word;
     int last_block;
@@ -25,8 +24,6 @@ public class BoardManager : MonoBehaviour {
     [SerializeField] Block[] board;
 
     private void Awake() {
-        alphabet = new List<string>()        { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Qu", "R", "S", "T", "U", "V", "X", "Y", "Z" };
-        alphabet_frequency = new List<int>() {  10,  4,   4,   8,   12,  4,   6,   4,   10,  2,   2,   8,   4,   12,  8,   4,   1,    12,  8,   12,  6,   4,   2,   4,   2 };
 
         for (int i = 0; i < board.Length; i++) {
             board[i].Init(this, i);
@@ -41,22 +38,27 @@ public class BoardManager : MonoBehaviour {
 
     public List<string> ShuffleBoard() {
         List<string> words_in_play = new List<string>();
-        List<int> alphabet_frequency_copy = new List<int>(alphabet_frequency);
-        int sum = 0;
-        foreach (int i in alphabet_frequency_copy) {
-            sum += i;
-        }
-        foreach (Block b in board) {
-            int value = Random.Range(0, sum);
-            while (value >= 0) {
-                for (int i = 0; i < alphabet_frequency_copy.Count; i++) {
-                    value -= alphabet_frequency_copy[i];
-                    if (value <= 0) {
-                        alphabet_frequency_copy[i]--;
-                        sum--;
-                        b.SetValue(alphabet[i]);
-                        break;
-                    }
+
+        List<Die> dice_copy = new List<Die>(dice);
+
+        if (dice_copy.Count != 0) {
+
+            while (dice_copy.Count < 16) {
+                dice_copy.AddRange(dice);
+            }
+
+            foreach (Block b in board) {
+                int value = Random.Range(0, dice_copy.Count);
+
+                Die die = dice_copy[value];
+                dice_copy.RemoveAt(value);
+
+                if (die.faces.Length == 0) {
+                    b.SetValue("a");
+                } else {
+                    value = Random.Range(0, die.faces.Length);
+
+                    b.SetValue(die.faces[value]);
                 }
             }
         }
@@ -238,4 +240,10 @@ public class BoardManager : MonoBehaviour {
 
         return false;
     }
+
+    [System.Serializable]
+    class Die {
+        public string[] faces;
+    }
+
 }

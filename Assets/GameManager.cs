@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public enum WordState { correct, incorrect, used }
 
-public enum GameMode { standard, zen, word_rush}
+public enum GameMode { standard, blitz, zen, word_rush}
 
 public class GameManager : MonoBehaviour {
 
@@ -21,6 +21,8 @@ public class GameManager : MonoBehaviour {
 
     [SerializeField] SoundEffectManager sfx;
 
+    [SerializeField] LeaderBoardManager lb_manager;
+
     [SerializeField] EndGameUIManager end_game_ui;
 
     HashSet<string> used_words;
@@ -29,7 +31,7 @@ public class GameManager : MonoBehaviour {
 
     [SerializeField] bool use_random;
 
-    [SerializeField] float time_per_board;
+    [SerializeField] float time_per_standard_board, time_per_blitz_board;
 
     [SerializeField][Range(0,1)] float time_trial_percent_needed;
 
@@ -50,12 +52,6 @@ public class GameManager : MonoBehaviour {
     }
 
     void Update() {
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            int seed = System.DateTime.Now.Millisecond;
-            Random.InitState(seed);
-            ShuffleBoard();
-        }
-
         if (game_running) {
             if (mode == GameMode.word_rush) {
                 DisplayTime(timer);
@@ -64,7 +60,7 @@ public class GameManager : MonoBehaviour {
                 if (score_manager.reached_target) {
                     EndGame();
                 }
-            } else if (mode == GameMode.standard) {
+            } else if (mode == GameMode.standard || mode == GameMode.blitz) {
                 DisplayTime(timer);
 
                 if (timer < 0) {
@@ -82,15 +78,17 @@ public class GameManager : MonoBehaviour {
         word_bank.Clear();
         score_manager.Clear();
         used_words.Clear();
+
         if (mode == GameMode.zen) {
             word_bank.SetWordsLeft(current_game_dictionary.Count);
-        } else if (mode == GameMode.standard){
-            timer = time_per_board;
+        } else if (mode == GameMode.standard) {
+            timer = time_per_standard_board;
+        } else if (mode == GameMode.blitz) {
+            timer = time_per_blitz_board;
         } else if (mode == GameMode.word_rush) {
             timer = 0;
             score_manager.SetTargetScore(GetTotalPointsAvailable(), time_trial_percent_needed);
         }
-        game_running = true;
     }
 
     public WordState ProcessWordHover(string word) {
@@ -118,6 +116,35 @@ public class GameManager : MonoBehaviour {
         }
     }
 
+    public void StartBlitzGame() {
+        StartGame(GameMode.blitz);
+    }
+
+    public void StartStandardGame() {
+        StartGame(GameMode.standard);
+    }
+
+    public void StartWordRushGame() {
+        StartGame(GameMode.word_rush);
+    }
+
+    public void StartZenGame() {
+        StartGame(GameMode.zen);
+    }
+
+    public void PlayAgain() {
+        StartGame(mode);
+    }
+
+    public void StartGame(GameMode mode) {
+        this.mode = mode;
+        lb_manager.LoadLeaderboard(mode);
+
+        ShuffleBoard();
+
+        game_running = true;
+    }
+
     void DisplayTime(float time) {
         if (time < 0) {
             time_remaining_text.text = "0:00";
@@ -138,7 +165,7 @@ public class GameManager : MonoBehaviour {
         GameInfo info = null;
         if (mode == GameMode.word_rush) {
             info = new GameInfo(mode, timer);
-        } else if (mode == GameMode.standard) {
+        } else if (mode == GameMode.standard || mode == GameMode.blitz) {
             info = new GameInfo(mode, score_manager.score);
         }
 
