@@ -42,7 +42,6 @@ public class BoardManager : MonoBehaviour {
         List<Die> dice_copy = new List<Die>(dice);
 
         if (dice_copy.Count != 0) {
-
             while (dice_copy.Count < 16) {
                 dice_copy.AddRange(dice);
             }
@@ -108,6 +107,14 @@ public class BoardManager : MonoBehaviour {
 
         line_display.Clear();
         word_display.Clear();
+    }
+
+    public void ClearDice() {
+        dice = new List<Die>();
+    }
+
+    public void AddDie(Die die) {
+        dice.Add(die);
     }
 
     void CancelWordSearch() {
@@ -242,8 +249,18 @@ public class BoardManager : MonoBehaviour {
     }
 
     [System.Serializable]
-    class Die {
+    public class Die {
         public string[] faces;
+
+        public override string ToString() {
+            string ret = "Die: ";
+
+            foreach (string face in faces) {
+                ret += face + ", ";
+            }
+
+            return ret;
+        }
     }
 
 }

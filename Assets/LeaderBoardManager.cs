@@ -5,49 +5,47 @@ using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
 public class LeaderBoardManager : MonoBehaviour {
-
-    public Leaderboard active_leaderboard { get; private set; }
+    Leaderboard blitz, word_rush, standard;
 
     string filepath;
     GameMode active_mode;
 
-    public void LoadLeaderboard(GameMode mode) {
-        if (active_mode == mode && active_leaderboard != null) {
-            return;
-        }
-
-        if (active_leaderboard != null) SaveLeaderboard();
-
-        active_mode = mode;
-
-        filepath = "";
-
-        if (mode == GameMode.blitz) {
-            filepath = "Blitz.lb";
-        } else if (mode == GameMode.standard){
-            filepath = "Standard.lb";
-        } else if (mode == GameMode.word_rush) {
-            filepath = "WordRush.lb";
-        } else {
-            active_leaderboard = null;
-            return;
-        }
-
-
-
-        filepath = Path.Combine(Application.persistentDataPath, filepath);
-
-        if (!File.Exists(filepath)) {
-            active_leaderboard = CreateLeaderboard(mode);
-
-            SaveLeaderboard();
-        } else {
-            LoadLeaderboard();
-        }
+    void Awake() {
+        blitz = LoadOrCreateLeaderboard(Path.Combine(Application.persistentDataPath, "Blitz.lb"), GameMode.blitz);
+        word_rush = LoadOrCreateLeaderboard(Path.Combine(Application.persistentDataPath, "WordRush.lb"), GameMode.word_rush);
+        standard = LoadOrCreateLeaderboard(Path.Combine(Application.persistentDataPath, "Standard.lb"), GameMode.standard);
     }
 
-    public void SaveLeaderboard() {
-        if (filepath == "") {
+    private void OnApplicationQuit() {
+        SaveAllLeaderboards();
+    }
+
+    public Leaderboard GetLeaderboard(GameMode mode) {
+        if (mode == GameMode.blitz) {
+            return blitz;
+        } else if (mode == GameMode.standard) {
+            return standard;
+        } else if (mode == GameMode.word_rush) {
+            return word_rush;
+        }
+        return null;
+    }
+
+    public void ClearAllScores() {
+        blitz = CreateLeaderboard(GameMode.blitz);
+        standard = CreateLeaderboard(GameMode.standard);
+        word_rush = CreateLeaderboard(GameMode.word_rush);
+        SaveAllLeaderboards();
+    }
+
+    public void SaveAllLeaderboards() {
+        SaveLeaderboard(Path.Combine(Application.persistentDataPath, "Blitz.lb"), blitz);
+        SaveLeaderboard(Path.Combine(Application.persistentDataPath, "WordRush.lb"), word_rush);
+        SaveLeaderboard(Path.Combine(Application.persistentDataPath, "Standard.lb"), standard);
+    }
+
+    void SaveLeaderboard(string filepath, Leaderboard to_save) {
+        if (to_save == null) {
             return;
         }
 
@@ -55,28 +53,31 @@ public class LeaderBoardManager : MonoBehaviour {
 
         FileStream file = File.Open(filepath, FileMode.OpenOrCreate);
 
-        bf.Serialize(file, active_leaderboard);
+        bf.Serialize(file, to_save);
 
         file.Close();
     }
 
-    void LoadLeaderboard() {
-        if (filepath == "") {
-            return;
+    Leaderboard LoadOrCreateLeaderboard(string filepath, GameMode mode) {
+        if (File.Exists(filepath)) {
+            return LoadLeaderboard(filepath);
+        } else {
+            return CreateLeaderboard(mode);
         }
+    }
 
+    Leaderboard LoadLeaderboard(string filepath) {
         BinaryFormatter bf = new BinaryFormatter();
 
         FileStream file = File.Open(filepath, FileMode.Open);
 
-
-        active_leaderboard = (Leaderboard)bf.Deserialize(file);
+        return (Leaderboard)bf.Deserialize(file);
     }
 
     Leaderboard CreateLeaderboard(GameMode mode) {
         bool ascending = (GameMode.word_rush == mode);
 
-        Leaderboard leaderboard = new Leaderboard(10, ascending);
+        Leaderboard leaderboard = new Leaderboard(50, ascending);
 
         return leaderboard;
     }

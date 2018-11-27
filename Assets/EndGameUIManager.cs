@@ -25,7 +25,7 @@ public class EndGameUIManager : MonoBehaviour {
 
     void LoadEndGameUI(GameInfo info) {
         lb_ui.Clear();
-        lb_manager.LoadLeaderboard(info.mode);
+        lb_manager.GetLeaderboard(info.mode);
 
         if (info.mode == GameMode.standard) {
             score_text.text = info.score + " pts";
@@ -40,43 +40,44 @@ public class EndGameUIManager : MonoBehaviour {
 
             LoadBlitzLeaderboard(info);
         }
-
-        lb_manager.SaveLeaderboard();
     }
 
     void LoadStandardLeaderboard(GameInfo info) {
         leaderboard_title.text = "Standard Leaderboard";
 
-        int placement = lb_manager.active_leaderboard.UpdateLeaderboard(info.score);
+        int placement = lb_manager.GetLeaderboard(info.mode).UpdateLeaderboard(info.score);
+        lb_manager.SaveAllLeaderboards();
 
-        LoadPointsBasedLeaderboard(placement);
+        LoadPointsBasedLeaderboard(lb_manager.GetLeaderboard(info.mode), placement);
     }
 
     void LoadBlitzLeaderboard(GameInfo info) {
         leaderboard_title.text = "Blitz Leaderboard";
 
-        int placement = lb_manager.active_leaderboard.UpdateLeaderboard(info.score);
+        int placement = lb_manager.GetLeaderboard(info.mode).UpdateLeaderboard(info.score);
+        lb_manager.SaveAllLeaderboards();
 
-        LoadPointsBasedLeaderboard(placement);
+        LoadPointsBasedLeaderboard(lb_manager.GetLeaderboard(info.mode), placement);
     }
 
     void LoadWordRushLeaderboard(GameInfo info) {
         leaderboard_title.text = "Word Rush Leaderboard";
 
-        int placement = lb_manager.active_leaderboard.UpdateLeaderboard(info.time_used);
+        int placement = lb_manager.GetLeaderboard(info.mode).UpdateLeaderboard(info.time_used);
+        lb_manager.SaveAllLeaderboards();
 
-        LoadTimeBasedLeaderboard(placement);
+        LoadTimeBasedLeaderboard(lb_manager.GetLeaderboard(info.mode), placement);
     }
 
-    void LoadPointsBasedLeaderboard(int highlight_number) {
-        for (int i = 0; i < lb_manager.active_leaderboard.count; i++) {
-            lb_ui.SetScore(i, lb_manager.active_leaderboard.GetScore(i).ToString(), i == highlight_number);
+    void LoadPointsBasedLeaderboard(Leaderboard leaderboard, int highlight_number) {
+        for (int i = 0; i < leaderboard.count; i++) {
+            lb_ui.SetScore(i, leaderboard.GetScore(i).ToString(), i == highlight_number);
         }
     }
 
-    void LoadTimeBasedLeaderboard(int highlight_number) {
-        for (int i = 0; i < lb_manager.active_leaderboard.count; i++) {
-            float score = lb_manager.active_leaderboard.GetScore(i);
+    void LoadTimeBasedLeaderboard(Leaderboard leaderboard, int highlight_number) {
+        for (int i = 0; i < leaderboard.count; i++) {
+            float score = leaderboard.GetScore(i);
             lb_ui.SetScore(i, (int)(score / 60) + ":" + (score % 60).ToString("00.000"), i == highlight_number);
         }
     }

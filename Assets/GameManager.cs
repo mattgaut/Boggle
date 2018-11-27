@@ -37,8 +37,12 @@ public class GameManager : MonoBehaviour {
 
     [SerializeField] Text time_remaining_text;
 
+    [SerializeField] GameObject board_object;
+
     [SerializeField] GameMode mode;
 
+    System.DateTime start_time;
+    float time_limit;
     float timer;
 
     private void Awake() {
@@ -49,13 +53,17 @@ public class GameManager : MonoBehaviour {
         seed = use_random ? System.DateTime.Now.Millisecond : seed;
         Random.InitState(seed);
         ShuffleBoard();
+        SetGameRunning(false);
     }
 
     void Update() {
+
+        board_object.SetActive(game_running);
+
         if (game_running) {
             if (mode == GameMode.word_rush) {
                 DisplayTime(timer);
-                timer += Time.deltaTime;
+                timer = (float)(System.DateTime.Now - start_time).TotalSeconds;
 
                 if (score_manager.reached_target) {
                     EndGame();
@@ -67,7 +75,7 @@ public class GameManager : MonoBehaviour {
                     EndGame();
                 }
 
-                timer -= Time.deltaTime;
+                timer = (float)(start_time - System.DateTime.Now).TotalSeconds + time_limit;
             }
         }
     }
@@ -117,10 +125,12 @@ public class GameManager : MonoBehaviour {
     }
 
     public void StartBlitzGame() {
+        time_limit = time_per_blitz_board;
         StartGame(GameMode.blitz);
     }
 
     public void StartStandardGame() {
+        time_limit = time_per_standard_board;
         StartGame(GameMode.standard);
     }
 
@@ -138,11 +148,22 @@ public class GameManager : MonoBehaviour {
 
     public void StartGame(GameMode mode) {
         this.mode = mode;
-        lb_manager.LoadLeaderboard(mode);
+
+        start_time = System.DateTime.Now;
 
         ShuffleBoard();
 
-        game_running = true;
+        SetGameRunning(true);
+    }
+
+    public void CancelGame() {
+        SetGameRunning(false);
+    }
+
+    void SetGameRunning(bool running) {
+        game_running = running;
+
+        board_object.SetActive(running);
     }
 
     void DisplayTime(float time) {
@@ -162,16 +183,20 @@ public class GameManager : MonoBehaviour {
     }
 
     void EndGame() {
+        if (!game_running) {
+            return;
+        }
+
         GameInfo info = null;
         if (mode == GameMode.word_rush) {
-            info = new GameInfo(mode, timer);
+            info = new GameInfo(mode, (float)timer);
         } else if (mode == GameMode.standard || mode == GameMode.blitz) {
             info = new GameInfo(mode, score_manager.score);
         }
 
         end_game_ui.ShowEndGameUI(info);
 
-        game_running = false;
+        SetGameRunning(false);
     }
 }
 

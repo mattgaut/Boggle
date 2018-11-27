@@ -9,6 +9,8 @@ public class WordBankController : MonoBehaviour {
 
     [SerializeField] Transform parent_transform;
 
+    [SerializeField] ColumnScrollController column_scroller;
+
     [SerializeField] Text word_prefab;
 
     List<Text> words_in_bank;
@@ -33,9 +35,8 @@ public class WordBankController : MonoBehaviour {
         }
         words_in_bank.Insert(position, new_word);
 
-        new_word.transform.SetParent(parent_transform);
-        new_word.transform.SetSiblingIndex(position);
-        new_word.transform.localScale = parent_transform.localScale;
+        column_scroller.AddObject(new_word.gameObject, position);
+
 
         if (using_words_left) {
             words_left_count--;
@@ -44,9 +45,7 @@ public class WordBankController : MonoBehaviour {
     }
 
     public void Clear() {
-        foreach (Text t in words_in_bank) {
-            Destroy(t.gameObject);
-        }
+        column_scroller.Clear();
         words_in_bank.Clear();
         words_left.text = "";
     }
